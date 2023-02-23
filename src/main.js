@@ -11,8 +11,9 @@ window.bootstrap = bootstrap;
 import config from './config';
 //import { fixedEncodeURIComponent, getUTCTimeStr } from "./utils"
 
+let article_lists_URL = 'g2'
 async function get_article_lists() {
-    const f = await fetch(`${config['CORS-PROXY']}/${config.TIMEforKids}/g2/`, {
+    const f = await fetch(`${config['CORS-PROXY']}/${config.TIMEforKids}/${article_lists_URL}/`, {
         //"mode": "cors"
     });
     const html = await f.text();
@@ -22,6 +23,17 @@ async function get_article_lists() {
     return `<main>${main}</main>`;
 }
 
+async function get_article(article_URL) {
+    const f = await fetch(`${config['CORS-PROXY']}/${config.TIMEforKids}/${article_URL}/`, {
+        //"mode": "cors"
+    });
+    const html = await f.text();
+    console.log(html);
+    const main = $(html).find('div.article-show').html(); //.article-show__content
+    console.log(main)
+    return `<div>${main}</div>`;
+}
+
 async function fetchImage(url) {
     let response = await fetch(url);
     let blob = await response.blob();
@@ -29,15 +41,11 @@ async function fetchImage(url) {
     return blobUrl;
 }
 
-
-//document is ready
-$(async function () {
-    const mainHtml = await get_article_lists();
-    console.log(mainHtml);
+function replace_article_links(mainHtml) {
     const main = $(mainHtml);
     main.find('a').each(function () {
         let href = this.href;
-        this.href = href.replace("https://www.timeforkids.com/", `${config['CORS-PROXY']}/https://www.timeforkids.com/`);
+        this.href = href.replace(`${config.TIMEforKids}`, `${config['CORS-PROXY']}/${config.TIMEforKids}`);
     })
 
     main.find('img').each(function () {
@@ -45,7 +53,7 @@ $(async function () {
 
         async function set() {
             let src = that.src;
-            src = src.replace("https://www.timeforkids.com/", `${config['CORS-PROXY']}/https://www.timeforkids.com/`);
+            src = src.replace(`${config.TIMEforKids}`, `${config['CORS-PROXY']}/${config.TIMEforKids}`);
             that.src = await fetchImage(src);
         }
 
@@ -53,5 +61,37 @@ $(async function () {
 
     })
 
+    return main;
+}
+
+async function update_article_lists() {
+    const mainHtml = await get_article_lists();
+    console.log(mainHtml);
+    
+    const main = replace_article_links(mainHtml);
+
     $('#main').html(main);
+}
+
+async function update_article(article_URL) {
+    const mainHtml = await get_article(article_URL);
+    console.log(mainHtml);
+    
+    const main = replace_article_links(mainHtml);
+
+    $('#main').html(main);
+
+}
+
+//document is ready
+$(function () {
+    update_article_lists()
+
+    $('#main').on('click','.c-article-preview__image a, .c-article-preview__title a, .c-article-preview__text a', function(){
+        const splits = this.href.split('/');
+        const article_URL = splits.at(-3) + '/' + splits.at(-2);
+        console.log(article_URL);
+        update_article(article_URL);
+        return false;
+    })
 })
