@@ -9,6 +9,7 @@ window.$ = jquery;
 window.bootstrap = bootstrap;
 
 import config from './config';
+import create_edge_TTS from './edge-tts';
 //import { fixedEncodeURIComponent, getUTCTimeStr } from "./utils"
 
 let article_lists_URL = 'g2'
@@ -80,6 +81,38 @@ async function update_article(article_URL) {
     const main = replace_article_links(mainHtml);
 
     $('#main').html(main);
+
+    $('.article-show__content-article > p').each(function(){
+        let text = $(this).text();
+
+        $(this).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
+
+        let that = this;
+
+        async function set() {
+            //'https://cooperative-cuff-elk.cyclic.app/https://translate-service.scratch.mit.edu/translate?language=zh&text=hello world'
+            const url = `${config['CORS-PROXY']}/https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`;
+            
+            let f = await fetch(url);
+            let zh_text = await f.json();
+
+            $(that).after(`<p class='translate-zh'>${zh_text.result}</p>`);
+        }
+
+        set();
+    })
+
+    $('.read-p').on('click', async function(){
+        const text = $(this).data('text');
+        try {
+            var tts = await create_edge_TTS();
+            await tts._(text)
+    
+        } catch (e) {
+            console.log('catch error:')
+            console.log(e)
+        }
+    })
 
 }
 
