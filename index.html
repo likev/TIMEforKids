@@ -6,32 +6,64 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <meta charset="utf-8">
-    <meta content="ChatAI" name="description" />
+    <meta content="TIME for Kids" name="description" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>TIME for Kids</title>
 
     <style>
-        .max_width_body {
-            max-width: 800px !important;
+        #main.max_width_body {
+            max-width: 800px;
         }
 
-        #chat, #chat .card-body {
-            flex-basis: 120px;
-            min-height: 120px;
-            overflow: auto;
+        .c-page-editions .c-grade-levels__level {
+            display: inline-block;
+            margin: 0 6px;
+            width: 3em;
+            height: 3em;
         }
 
-        #chat .ask {
-            text-align: right;
-            font-weight: 600;
-            font-style: italic;
-            margin-left: 50px;
+        .c-article-preview__image img {
+            max-width: 300px;
         }
 
-        #chat .answer {
-            margin-bottom: 20px;
-            margin-right: 50px;
+        .c-article-preview__section {
+            font-size: 14px;
+            margin: 0 0 4px;
+        }
+
+        .c-article-preview__title {
+            font-size: 32px;
+        }
+
+        .c-article-preview__text a {
+            color: #202020;
+            font-family: Roboto, Arial, sans-serif;
+            font-weight: 400;
+        }
+
+        .c-article-preview__content a {
+            text-decoration: none;
+        }
+
+        .c-article-preview__availability,
+        nav.pagination .screen-reader-text {
+            display: none;
+        }
+
+        nav.pagination .page-numbers {
+            background-color: #fff;
+            color: #ed2947;
+            font-weight: 700;
+            line-height: 46px;
+            margin: 4px;
+            padding: 10px;
+            text-decoration: none;
+        }
+
+        nav.pagination .page-numbers.current {
+            background-color: #ed2947;
+            color: #fff;
         }
     </style>
 
@@ -40,8 +72,8 @@
 <body>
 
     <div id="main" class="container max_width_body">
-        
-            <!--
+
+        <!--
         <footer>
             <h2>说明：</h2>
             <ol>
