@@ -1,0 +1,18 @@
+{
+  "name": "time-for-kids",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "bootstrap": "^5.0.2",
+    "bootstrap-icons": "^1.5.0",
+    "jquery": "github:jquery/jquery",
+    "moment": "^2.14.0"
+  },
+  "devDependencies": {
+    "vite": "^2.6.4"
+  }
+}
