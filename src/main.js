@@ -12,8 +12,8 @@ import config from './config';
 import create_edge_TTS from './edge-tts';
 //import { fixedEncodeURIComponent, getUTCTimeStr } from "./utils"
 
-let article_lists_URL = 'g2'
-async function get_article_lists() {
+
+async function get_article_lists(article_lists_URL) {
     const f = await fetch(`${config['CORS-PROXY']}/${config.TIMEforKids}/${article_lists_URL}/`, {
         //"mode": "cors"
     });
@@ -46,7 +46,9 @@ function replace_article_links(mainHtml) {
     const main = $(mainHtml);
     main.find('a').each(function () {
         let href = this.href;
-        this.href = href.replace(`${config.TIMEforKids}`, `${config['CORS-PROXY']}/${config.TIMEforKids}`);
+        $(this).attr('data-href', href);
+
+        this.href = '/#'+ href.split('/').slice(3,-1).join(`/`);
     })
 
     main.find('img').each(function () {
@@ -65,10 +67,10 @@ function replace_article_links(mainHtml) {
     return main;
 }
 
-async function update_article_lists() {
-    const mainHtml = await get_article_lists();
+async function update_article_lists(article_lists_URL) {
+    const mainHtml = await get_article_lists(article_lists_URL);
     console.log(mainHtml);
-    
+
     const main = replace_article_links(mainHtml);
 
     $('#main').html(main);
@@ -77,12 +79,12 @@ async function update_article_lists() {
 async function update_article(article_URL) {
     const mainHtml = await get_article(article_URL);
     console.log(mainHtml);
-    
+
     const main = replace_article_links(mainHtml);
 
     $('#main').html(main);
 
-    $('.article-show__content-article > p').each(function(){
+    $('.article-show__content-article > p').each(function () {
         let text = $(this).text();
 
         $(this).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
@@ -92,7 +94,7 @@ async function update_article(article_URL) {
         async function set() {
             //'https://cooperative-cuff-elk.cyclic.app/https://translate-service.scratch.mit.edu/translate?language=zh&text=hello world'
             const url = `${config['CORS-PROXY']}/https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`;
-            
+
             let f = await fetch(url);
             let zh_text = await f.json();
 
@@ -102,12 +104,12 @@ async function update_article(article_URL) {
         set();
     })
 
-    $('.read-p').on('click', async function(){
+    $('.read-p').on('click', async function () {
         const text = $(this).data('text');
         try {
             var tts = await create_edge_TTS();
             await tts._(text)
-    
+
         } catch (e) {
             console.log('catch error:')
             console.log(e)
@@ -118,13 +120,22 @@ async function update_article(article_URL) {
 
 //document is ready
 $(function () {
-    update_article_lists()
+    let article_lists_URL = 'g2';
+    update_article_lists(article_lists_URL);
 
-    $('#main').on('click','.c-article-preview__image a, .c-article-preview__title a, .c-article-preview__text a', function(){
-        const splits = this.href.split('/');
-        const article_URL = splits.at(-3) + '/' + splits.at(-2);
-        console.log(article_URL);
-        update_article(article_URL);
+    $('#main').on('click', 'a', function () {
+        const levels = ['k1', 'g2', 'g34', 'g56'];
+        const splits = $(this).data('href').split('/');
+
+        if (levels.includes(splits.at(-3))) {//it is an article
+            const article_URL = splits.at(-3) + '/' + splits.at(-2);
+            console.log(article_URL);
+            update_article(article_URL);
+        } else {//it is an article_lists
+            article_lists_URL = splits.slice(3, -1).join('/');
+            update_article_lists(article_lists_URL);
+        }
+
         return false;
     })
 })
