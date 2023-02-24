@@ -10,7 +10,22 @@ window.bootstrap = bootstrap;
 
 import config from './config';
 import create_edge_TTS from './edge-tts';
-//import { fixedEncodeURIComponent, getUTCTimeStr } from "./utils"
+import { Polyfill } from "./utils";
+
+Polyfill();
+
+const DEBUG_MOBILE = false;
+
+let console = {};
+
+if (DEBUG_MOBILE) {
+    console.log = function (text) {
+        $('body').prepend(text);
+    }
+
+} else {
+    console = window.console;
+}
 
 
 async function get_article_lists(article_lists_URL) {
@@ -18,9 +33,9 @@ async function get_article_lists(article_lists_URL) {
         //"mode": "cors"
     });
     const html = await f.text();
-    console.log(html);
+    //console.log(html);
     const main = $(html).find('main').html();
-    console.log(main)
+    //console.log(main)
     return `<main>${main}</main>`;
 }
 
@@ -29,9 +44,9 @@ async function get_article(article_URL) {
         //"mode": "cors"
     });
     const html = await f.text();
-    console.log(html);
+    //console.log(html);
     const main = $(html).find('div.article-show').html(); //.article-show__content
-    console.log(main)
+    //console.log(main)
     return `<div>${main}</div>`;
 }
 
@@ -48,7 +63,7 @@ function replace_article_links(mainHtml) {
         let href = this.href;
         $(this).attr('data-href', href);
 
-        this.href = '/#'+ href.split('/').slice(3,-1).join(`/`);
+        this.href = '/#' + href.split('/').slice(3, -1).join(`/`);
     })
 
     main.find('img').each(function () {
@@ -69,7 +84,7 @@ function replace_article_links(mainHtml) {
 
 async function update_article_lists(article_lists_URL) {
     const mainHtml = await get_article_lists(article_lists_URL);
-    console.log(mainHtml);
+    //console.log(mainHtml);
 
     const main = replace_article_links(mainHtml);
 
@@ -78,7 +93,7 @@ async function update_article_lists(article_lists_URL) {
 
 async function update_article(article_URL) {
     const mainHtml = await get_article(article_URL);
-    console.log(mainHtml);
+    //console.log(mainHtml);
 
     const main = replace_article_links(mainHtml);
 
@@ -125,18 +140,42 @@ $(function () {
     let article_lists_URL = 'g2';
     update_article_lists(article_lists_URL);
 
-    $('#main').on('click', 'a', function () {
+    $('#main').on('click', 'a', function (e) {
+        console.log(JSON.stringify(e));
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('#main a click begin');
+
         const levels = ['k1', 'g2', 'g34', 'g56'];
         const splits = $(this).data('href').split('/');
 
-        if (levels.includes(splits.at(-3))) {//it is an article
-            const article_URL = splits.at(-3) + '/' + splits.at(-2);
-            console.log(article_URL);
-            update_article(article_URL);
-        } else {//it is an article_lists
-            article_lists_URL = splits.slice(3, -1).join('/');
-            update_article_lists(article_lists_URL);
+        try {
+            console.log('#main a click begin check begin');
+            if (levels.includes(splits.at(-3))) {//it is an article
+                console.log('#main a click begin article');
+
+                const article_URL = splits.at(-3) + '/' + splits.at(-2);
+                console.log(article_URL);
+
+                console.log('#main a click update_article begin');
+                update_article(article_URL);
+                console.log('#main a click update_article end');
+            } else {//it is an article_lists
+                console.log('#main a click begin article_lists');
+
+                article_lists_URL = splits.slice(3, -1).join('/');
+
+                console.log('#main a update_article_lists begin');
+                update_article_lists(article_lists_URL);
+                console.log('#main a update_article_lists end');
+            }
+        } catch (e) {
+            const { name, message, cause } = e;
+            console.log(JSON.stringify({ name, message, cause }))
         }
+
+        console.log('#main a click end');
 
         return false;
     })
