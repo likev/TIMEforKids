@@ -108,6 +108,8 @@ async function update_article(article_URL) {
         const text = $(this).data('text');
         try {
             var tts = await create_edge_TTS();
+            tts.setVoice('en-US-AnaNeural'); // 'en-US-AriaNeural'
+
             await tts._(text)
 
         } catch (e) {
