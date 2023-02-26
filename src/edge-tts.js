@@ -201,8 +201,8 @@ function create_edge_TTS({ timeout = 10, auto_reconnect = true } = {}) {
             console.log(e);
             if (--play_count) setTimeout(_ => audio.play(), play_span);
             else {
-                URL.revokeObjectURL(url);
-                play_resolve(true);
+                //URL.revokeObjectURL(url);
+                play_resolve(url);
                 console.log('play end');
             }
         }

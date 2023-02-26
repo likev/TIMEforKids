@@ -120,12 +120,23 @@ async function update_article(article_URL) {
     })
 
     $('.read-p').on('click', async function () {
-        const text = $(this).data('text');
+        const text = $(this).data('text'), audio_url = $(this).data('url');
+
+        if (audio_url) {//we have store the url;
+            const audio = new Audio(audio_url);
+            await audio.play();
+
+            return;
+        }
+
+        //else try create new tts
         try {
-            var tts = await create_edge_TTS();
+            const tts = await create_edge_TTS();
             tts.setVoice('en-US-AnaNeural'); // 'en-US-AriaNeural'
 
-            await tts._(text)
+            const new_url = await tts._(text);
+
+            $(this).attr('data-url', new_url);
 
         } catch (e) {
             console.log('catch error:')
