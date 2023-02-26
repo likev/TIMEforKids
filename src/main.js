@@ -100,7 +100,10 @@ async function update_article(article_URL) {
     $('#main').html(main);
 
     $('.article-show__content-article > p').each(function () {
-        let text = $(this).text();
+        const p_clone = $(this).clone();
+        p_clone.find('.definition').remove();
+
+        let text = p_clone.text();
 
         $(this).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
 
