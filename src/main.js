@@ -91,6 +91,29 @@ async function update_article_lists(article_lists_URL) {
     $('#main').html(main);
 }
 
+function create_modal(title, body) {
+    const modal_html = `<div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">${title}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+        </div>
+        
+      </div>
+    </div>
+  </div>`;
+
+    const jQmodal = $(modal_html);
+    jQmodal.find('.modal-body').html(body); //equal to empty().append(body);
+
+    const myModal = new bootstrap.Modal(jQmodal[0]);
+    return myModal;
+}
+
 async function update_article(article_URL) {
     const mainHtml = await get_article(article_URL);
     //console.log(mainHtml);
@@ -100,6 +123,7 @@ async function update_article(article_URL) {
     $('#main').html(main);
 
     $('.article-show__content-article > p').each(function () {
+        //translate
         const p_clone = $(this).clone();
         p_clone.find('.definition').remove();
 
@@ -120,6 +144,21 @@ async function update_article(article_URL) {
         }
 
         set();
+
+        //powerword
+        const definition = $(this).find('.powerword .definition');
+        if (!definition.length) return;
+
+        const powerword_title = definition.find('.title').text();
+
+        definition.find('.title, .close').remove();
+
+        const powerword_modal = create_modal(powerword_title, definition);
+
+        $(this).find('.powerword').on('click', function(){
+            powerword_modal.show();
+        })
+
     })
 
     $('.read-p').on('click', async function () {
