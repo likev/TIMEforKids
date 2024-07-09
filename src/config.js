@@ -1,8 +1,8 @@
 
 const CONFIG = {
 
-    "CORS-PROXY": "https://cooperative-cuff-elk.cyclic.app", //"conversation",
-    "TIMEforKids": "https://www.timeforkids.com" //"conversation",
+    "CORS-PROXY": "https://timekids.pages.dev/proxy",
+    "TIMEforKids": "https://www.timeforkids.com"
 };
 
 export default CONFIG;
