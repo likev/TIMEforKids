@@ -29,7 +29,7 @@ if (DEBUG_MOBILE) {
 
 
 async function get_article_lists(article_lists_URL) {
-    const f = await fetch(`${config['CORS-PROXY']}/${config.TIMEforKids}/${article_lists_URL}/`, {
+    const f = await fetch(`${config['CORS-PROXY']}?url=${config.TIMEforKids}/${article_lists_URL}/`, {
         //"mode": "cors"
     });
     const html = await f.text();
@@ -40,7 +40,7 @@ async function get_article_lists(article_lists_URL) {
 }
 
 async function get_article(article_URL) {
-    const f = await fetch(`${config['CORS-PROXY']}/${config.TIMEforKids}/${article_URL}/`, {
+    const f = await fetch(`${config['CORS-PROXY']}?url=${config.TIMEforKids}/${article_URL}/`, {
         //"mode": "cors"
     });
     const html = await f.text();
@@ -71,7 +71,7 @@ function replace_article_links(mainHtml) {
 
         async function set() {
             let src = that.src;
-            src = src.replace(`${config.TIMEforKids}`, `${config['CORS-PROXY']}/${config.TIMEforKids}`);
+            src = src.replace(`${config.TIMEforKids}`, `${config['CORS-PROXY']}?url=${config.TIMEforKids}`);
             that.src = await fetchImage(src);
         }
 
@@ -135,7 +135,7 @@ async function update_article(article_URL) {
 
         async function set() {
             //'https://cooperative-cuff-elk.cyclic.app/https://translate-service.scratch.mit.edu/translate?language=zh&text=hello world'
-            const url = `${config['CORS-PROXY']}/https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`;
+            const url = `${config['CORS-PROXY']}?url=https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`;
 
             let f = await fetch(url);
             let zh_text = await f.json();
