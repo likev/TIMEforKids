@@ -1,32 +1,47 @@
-//https://www.perplexity.ai/search/is-cloudflare-pages-function-t-5LLHCW6CQe.IfZNJsBFtbA#1
+//https://www.perplexity.ai/search/is-cloudflare-pages-function-t-5LLHCW6CQe.IfZNJsBFtbA#7
 //Example Request
 //https://your-pages-domain.pages.dev/proxy?url=https://example.com
 export async function onRequest(context) {
-  const { request } = context;
-  const url = new URL(request.url);
-  const targetUrl = url.searchParams.get('url');
+  const { request, params } = context;
+  let targetUrl = params.proxy;
 
   if (!targetUrl) {
-    return new Response('Missing "url" query parameter', { status: 400 });
+    return new Response('Missing target URL in the path', { status: 400 });
+  }
+
+  // Ensure the target URL includes the protocol
+  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    targetUrl = "https://" + targetUrl;
   }
 
   try {
     const response = await fetch(targetUrl);
     if (!response.ok) {
-      return new Response('Failed to fetch the target URL', { status: response.status });
+      return new Response(`Failed to fetch the target URL: ${response.statusText}`, { status: response.status });
     }
 
-    const html = await response.text();
+    const contentType = response.headers.get('Content-Type') || 'text/plain';
+    let body;
 
-    return new Response(html, {
+    if (contentType.includes('application/json')) {
+      body = JSON.stringify(await response.json());
+    } else if (contentType.includes('text')) {
+      body = await response.text();
+    } else {
+      body = await response.arrayBuffer();
+    }
+
+    return new Response(body, {
       headers: {
-        'Content-Type': 'text/html; charset=UTF-8',
+        'Content-Type': contentType,
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   } catch (error) {
-    return new Response('Error fetching the target URL', { status: 500 });
+    return new Response(`Error fetching the target URL: ${error.message}`, { status: 500 });
   }
 }
+
+
