@@ -138,7 +138,7 @@ async function processAllParagraphs() {
 
         //powerword
         const definition = $(paragraph).find('.powerword .definition');
-        if (!definition.length) return;
+        if (!definition.length) continue;
         
         const powerword_title = definition.find('.title').text();
         
