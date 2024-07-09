@@ -114,6 +114,78 @@ function create_modal(title, body) {
     return myModal;
 }
 
+async function translateParagraph(paragraph) {
+//translate
+	const p_clone = $(paragraph).clone();
+	p_clone.find('.definition').remove();
+
+	let text = p_clone.text();
+	
+	//'https://cooperative-cuff-elk.cyclic.app/https://translate-service.scratch.mit.edu/translate?language=zh&text=hello world'
+	const translate_url = encodeURIComponent(`https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`);
+	const url = `${config['CORS-PROXY']}?url=${translate_url}`;
+
+	let f = await fetch(url);
+	let zh_text = await f.json();
+
+	$(paragraph).after(`<p class='translate-zh'>${zh_text.result}</p>`);
+}
+
+async function processOneParagraph(paragraph) {
+
+	$(paragraph).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
+
+	await translateParagraph(paragraph);
+
+	//powerword
+	const definition = $(paragraph).find('.powerword .definition');
+	if (!definition.length) return;
+
+	const powerword_title = definition.find('.title').text();
+
+	definition.find('.title, .close').remove();
+
+	const powerword_modal = create_modal(powerword_title, definition);
+
+	$(paragraph).find('.powerword').on('click', function(){
+		powerword_modal.show();
+	})
+
+}
+	
+async function processAllParagraphs() {
+  const paragraphs = $('.article-show__content-article > p');
+  
+  for (const paragraph of paragraphs) {
+    await processOneParagraph(paragraph);
+  }
+}
+
+async function readOneParagraph() {
+    const text = $(this).data('text'), audio_url = $(this).data('url');
+
+    if (audio_url) {//we have store the url;
+        const audio = new Audio(audio_url);
+        await audio.play();
+
+        return;
+    }
+
+    //else try create new tts
+    try {
+        const tts = await create_edge_TTS();
+        tts.setVoice('en-US-AnaNeural'); // 'en-US-AriaNeural'
+
+        const new_url = await tts._(text);
+
+        $(this).attr('data-url', new_url);
+
+    } catch (e) {
+        console.log('catch error:')
+        console.log(e)
+    }
+}
+
 async function update_article(article_URL) {
     const mainHtml = await get_article(article_URL);
     //console.log(mainHtml);
@@ -122,70 +194,9 @@ async function update_article(article_URL) {
 
     $('#main').html(main);
 
-    $('.article-show__content-article > p').each(function () {
-        //translate
-        const p_clone = $(this).clone();
-        p_clone.find('.definition').remove();
+    processAllParagraphs();
 
-        let text = p_clone.text();
-
-        $(this).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
-
-        let that = this;
-
-        async function set() {
-            //'https://cooperative-cuff-elk.cyclic.app/https://translate-service.scratch.mit.edu/translate?language=zh&text=hello world'
-            const translate_url = encodeURIComponent(`https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`);
-            const url = `${config['CORS-PROXY']}?url=${translate_url}`;
-
-            let f = await fetch(url);
-            let zh_text = await f.json();
-
-            $(that).after(`<p class='translate-zh'>${zh_text.result}</p>`);
-        }
-
-        set();
-
-        //powerword
-        const definition = $(this).find('.powerword .definition');
-        if (!definition.length) return;
-
-        const powerword_title = definition.find('.title').text();
-
-        definition.find('.title, .close').remove();
-
-        const powerword_modal = create_modal(powerword_title, definition);
-
-        $(this).find('.powerword').on('click', function(){
-            powerword_modal.show();
-        })
-
-    })
-
-    $('.read-p').on('click', async function () {
-        const text = $(this).data('text'), audio_url = $(this).data('url');
-
-        if (audio_url) {//we have store the url;
-            const audio = new Audio(audio_url);
-            await audio.play();
-
-            return;
-        }
-
-        //else try create new tts
-        try {
-            const tts = await create_edge_TTS();
-            tts.setVoice('en-US-AnaNeural'); // 'en-US-AriaNeural'
-
-            const new_url = await tts._(text);
-
-            $(this).attr('data-url', new_url);
-
-        } catch (e) {
-            console.log('catch error:')
-            console.log(e)
-        }
-    })
+    $('.read-p').on('click', readOneParagraph);
 
 }
 
