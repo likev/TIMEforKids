@@ -124,38 +124,43 @@ async function translateParagraph(paragraph, text) {
     
     $(paragraph).after(`<p class='translate-zh'>${zh_text.result}</p>`);
 }
-
-async function processOneParagraph(paragraph) {
-    const p_clone = $(paragraph).clone();
-    p_clone.find('.definition').remove();
-    
-    let text = p_clone.text();
-    
-    $(paragraph).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
-    
-    await translateParagraph(paragraph, text);
-    
-    //powerword
-    const definition = $(paragraph).find('.powerword .definition');
-    if (!definition.length) return;
-    
-    const powerword_title = definition.find('.title').text();
-    
-    definition.find('.title, .close').remove();
-    
-    const powerword_modal = create_modal(powerword_title, definition);
-    
-    $(paragraph).find('.powerword').on('click', function(){
-        powerword_modal.show();
-    })
-
-}
 	
 async function processAllParagraphs() {
     const paragraphs = $('.article-show__content-article > p');
-    
+
     for (const paragraph of paragraphs) {
-    await processOneParagraph(paragraph);
+        const p_clone = $(paragraph).clone();
+        p_clone.find('.definition').remove();
+        
+        let text = p_clone.text();
+        
+        $(paragraph).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
+
+        //powerword
+        const definition = $(paragraph).find('.powerword .definition');
+        if (!definition.length) return;
+        
+        const powerword_title = definition.find('.title').text();
+        
+        definition.find('.title, .close').remove();
+        
+        const powerword_modal = create_modal(powerword_title, definition);
+        
+        $(paragraph).find('.powerword').on('click', function(){
+            powerword_modal.show();
+        })
+    }
+
+    $('.read-p').on('click',readOneParagraph); //add click event for all read-p button
+
+    //we then translate paragraphs one by one
+    for (const paragraph of paragraphs) {
+        const p_clone = $(paragraph).clone();
+        p_clone.find('.definition').remove();
+        
+        let text = p_clone.text();
+        
+        await translateParagraph(paragraph, text);
     }
 }
 
@@ -193,9 +198,6 @@ async function update_article(article_URL) {
     $('#main').html(main);
 
     processAllParagraphs();
-
-    $('.read-p').on('click', readOneParagraph);
-
 }
 
 //document is ready
