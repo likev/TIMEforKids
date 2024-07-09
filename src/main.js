@@ -155,10 +155,7 @@ async function processAllParagraphs() {
 
     //we then translate paragraphs one by one
     for (const paragraph of paragraphs) {
-        const p_clone = $(paragraph).clone();
-        p_clone.find('.definition').remove();
-        
-        let text = p_clone.text();
+        let text = $('.read-p', paragraph).data('text');
         
         await translateParagraph(paragraph, text);
     }
