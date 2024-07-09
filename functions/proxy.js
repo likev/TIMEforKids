@@ -2,8 +2,9 @@
 //Example Request
 //https://your-pages-domain.pages.dev/proxy?url=https://example.com
 export async function onRequest(context) {
-  const { request, params } = context;
-  let targetUrl = params.proxy;
+  const { request } = context;
+  const url = new URL(request.url);
+  let targetUrl = url.searchParams.get('url');
 
   if (!targetUrl) {
     return new Response('Missing target URL in the path', { status: 400 });
