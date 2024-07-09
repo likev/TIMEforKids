@@ -114,51 +114,49 @@ function create_modal(title, body) {
     return myModal;
 }
 
-async function translateParagraph(paragraph) {
-//translate
-	const p_clone = $(paragraph).clone();
-	p_clone.find('.definition').remove();
-
-	let text = p_clone.text();
-	
-	//'https://cooperative-cuff-elk.cyclic.app/https://translate-service.scratch.mit.edu/translate?language=zh&text=hello world'
-	const translate_url = encodeURIComponent(`https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`);
-	const url = `${config['CORS-PROXY']}?url=${translate_url}`;
-
-	let f = await fetch(url);
-	let zh_text = await f.json();
-
-	$(paragraph).after(`<p class='translate-zh'>${zh_text.result}</p>`);
+async function translateParagraph(paragraph, text) {
+    //translate
+    const translate_url = encodeURIComponent(`https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`);
+    const url = `${config['CORS-PROXY']}?url=${translate_url}`;
+    
+    let f = await fetch(url);
+    let zh_text = await f.json();
+    
+    $(paragraph).after(`<p class='translate-zh'>${zh_text.result}</p>`);
 }
 
 async function processOneParagraph(paragraph) {
-
-	$(paragraph).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
-
-	await translateParagraph(paragraph);
-
-	//powerword
-	const definition = $(paragraph).find('.powerword .definition');
-	if (!definition.length) return;
-
-	const powerword_title = definition.find('.title').text();
-
-	definition.find('.title, .close').remove();
-
-	const powerword_modal = create_modal(powerword_title, definition);
-
-	$(paragraph).find('.powerword').on('click', function(){
-		powerword_modal.show();
-	})
+    const p_clone = $(paragraph).clone();
+    p_clone.find('.definition').remove();
+    
+    let text = p_clone.text();
+    
+    $(paragraph).addClass('article-english').prepend(`<button class="read-p" data-text="${text}">Read...</button>`);
+    
+    await translateParagraph(paragraph, text);
+    
+    //powerword
+    const definition = $(paragraph).find('.powerword .definition');
+    if (!definition.length) return;
+    
+    const powerword_title = definition.find('.title').text();
+    
+    definition.find('.title, .close').remove();
+    
+    const powerword_modal = create_modal(powerword_title, definition);
+    
+    $(paragraph).find('.powerword').on('click', function(){
+        powerword_modal.show();
+    })
 
 }
 	
 async function processAllParagraphs() {
-  const paragraphs = $('.article-show__content-article > p');
-  
-  for (const paragraph of paragraphs) {
+    const paragraphs = $('.article-show__content-article > p');
+    
+    for (const paragraph of paragraphs) {
     await processOneParagraph(paragraph);
-  }
+    }
 }
 
 async function readOneParagraph() {
