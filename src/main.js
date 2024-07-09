@@ -135,7 +135,8 @@ async function update_article(article_URL) {
 
         async function set() {
             //'https://cooperative-cuff-elk.cyclic.app/https://translate-service.scratch.mit.edu/translate?language=zh&text=hello world'
-            const url = `${config['CORS-PROXY']}?url=https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`;
+            const translate_url = encodeURIComponent(`https://translate-service.scratch.mit.edu/translate?language=zh&text=${text}`);
+            const url = `${config['CORS-PROXY']}?url=${translate_url}`;
 
             let f = await fetch(url);
             let zh_text = await f.json();
